@@ -49,7 +49,7 @@ jobs:
       - name: 部署到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }} 
+          github_token: ${{ secrets.ACTIONS_DEPLOY_KEY }} 
           publish_dir: ./frontend/dist
           publish_branch: gh-pages
           force_orphan: true
