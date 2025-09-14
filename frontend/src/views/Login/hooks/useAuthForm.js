@@ -88,9 +88,9 @@ export const useAuthForm = () => {
       if (result.success) {
         ElMessage.success('登录成功');
         
-        // 跳转到首页
+        // 跳转到后台管理系统
         setTimeout(() => {
-          router.push('/') || (window.location.href = '/');
+          router.push('/admin') || (window.location.href = '/admin');
         }, 1000);
         return true;
       } else {
@@ -122,9 +122,9 @@ export const useAuthForm = () => {
       if (result.success) {
         ElMessage.success('登录成功');
         
-        // 跳转到首页
+        // 跳转到后台管理系统
         setTimeout(() => {
-          router.push('/') || (window.location.href = '/');
+          router.push('/admin') || (window.location.href = '/admin');
         }, 1000);
         return true;
       } else {
