@@ -150,9 +150,9 @@ onUnmounted(() => {
 
 // 修复显示协议方法
 const showAgreement = (type) => {
-  // 直接调用全局注册的方法
-  if (window.AgreementModal && window.AgreementModal.showAgreement) {
-    window.AgreementModal.showAgreement(type)
+  // 直接调用组件的方法
+  if (agreementModalRef.value && agreementModalRef.value.showAgreement) {
+    agreementModalRef.value.showAgreement(type)
   } else {
     ElMessage.error('无法打开协议窗口，请刷新页面重试')
   }

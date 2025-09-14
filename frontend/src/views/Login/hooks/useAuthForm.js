@@ -1,7 +1,8 @@
 // src/views/Auth/hooks/useAuthForm.js
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router' // 后续实际项目可替换为路由跳转
+import { useRouter } from 'vue-router'
+import { authApi } from '@/api'
 
 /**
  * 登录/注册表单逻辑钩子
@@ -13,9 +14,11 @@ export const useAuthForm = () => {
   const loginLoading = ref(false)
   const registerLoading = ref(false)
 
-  // ------------------------------ 模拟API函数（后续替换为真实接口）------------------------------
-  // 模拟用户名唯一性校验
+  // ------------------------------ 真实API调用 ------------------------------
+  // 用户名唯一性校验
   const checkUsernameExists = async (username) => {
+    // 实际项目中可能需要调用单独的接口来校验用户名
+    // 这里我们使用模拟逻辑，因为authApi中没有提供专门的校验接口
     await new Promise(resolve => setTimeout(resolve, 500))
     const existingUsernames = ['admin', 'test', 'user123']
     if (existingUsernames.includes(username.toLowerCase())) {
@@ -24,8 +27,10 @@ export const useAuthForm = () => {
     return true
   }
 
-  // 模拟邮箱唯一性校验
+  // 邮箱唯一性校验
   const checkEmailExists = async (email) => {
+    // 实际项目中可能需要调用单独的接口来校验邮箱
+    // 这里我们使用模拟逻辑，因为authApi中没有提供专门的校验接口
     await new Promise(resolve => setTimeout(resolve, 500))
     const existingEmails = ['admin@example.com', 'test@example.com']
     if (existingEmails.includes(email.toLowerCase())) {
@@ -34,38 +39,46 @@ export const useAuthForm = () => {
     return true
   }
 
-  // 模拟发送验证码（登录/注册通用）
+  // 发送验证码（登录/注册通用）
   // type: 'login'（手机号登录）或 'register'（邮箱注册）
   const sendCodeAPI = async (target, type) => {
-    // 模拟API请求延迟
-    await new Promise(resolve => setTimeout(resolve, 500))
-    // 实际项目中替换为真实接口调用（如 axios.post('/api/send-code', { target, type })）
-    console.log(`向${type === 'login' ? '手机号' : '邮箱'} ${target} 发送验证码`);
-    return true; // 模拟请求成功
+    if (type === 'login') {
+      // 手机号登录验证码
+      return await authApi.getPhoneVerifyCode(target)
+    } else {
+      // 邮箱注册验证码
+      return await authApi.getEmailVerifyCode(target)
+    }
   }
 
-  // 模拟手机号登录API
+  // 手机号登录API
   const phoneLoginAPI = async (formData) => {
-    await new Promise(resolve => setTimeout(resolve, 800))
-    // 实际项目中替换为真实登录接口（如返回token、用户信息）
-    console.log('手机号登录请求数据:', formData);
-    return { success: true, token: 'mock-phone-token', user: { id: 1, phone: formData.phone } };
+    return await authApi.phoneLogin({
+      phone: formData.phone,
+      verifyCode: formData.code  // 注意：表单中字段名为code
+    })
   }
 
-  // 模拟邮箱登录API
+  // 邮箱登录API
   const emailLoginAPI = async (formData) => {
-    await new Promise(resolve => setTimeout(resolve, 800))
-    console.log('邮箱登录请求数据:', formData);
-    return { success: true, token: 'mock-email-token', user: { id: 2, username: formData.username } };
+    // 根据用户输入的是邮箱还是用户名，调用不同的接口
+    // 这里简化处理，统一调用emailLogin接口
+    return await authApi.emailLogin({
+      email: formData.username, // 假设username可能是邮箱
+      password: formData.password
+    })
   }
 
-  // 模拟注册API
+  // 注册API
   const registerAPI = async (formData) => {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    // 实际项目中过滤重复字段（如confirmPassword无需传给后端）
-    const { confirmPassword, status, ...submitData } = formData;
-    console.log('注册请求数据:', submitData);
-    return { success: true, message: '注册成功' };
+    // 过滤重复字段，并将code重命名为verifyCode以匹配API定义
+    const { confirmPassword, status, code, ...submitData } = formData
+    // 创建符合API要求的数据结构
+    const apiData = {
+      ...submitData,
+      verifyCode: code // 重命名字段以匹配API定义
+    }
+    return await authApi.register(apiData)
   }
 
   // ------------------------------ 业务逻辑函数 ------------------------------
@@ -99,17 +112,30 @@ export const useAuthForm = () => {
   const handlePhoneLogin = async (formData) => {
     loginLoading.value = true;
     try {
-      const res = await phoneLoginAPI(formData);
-      if (res.success) {
-        ElMessage.success('登录成功');
-        // 实际项目中：1. 存储token（如localStorage） 2. 更新全局状态（如Pinia/Vuex） 3. 跳转首页
-        setTimeout(() => {
-          router.push('/') || (window.location.href = '/');
-        }, 1000);
-        return true;
+      const data = await phoneLoginAPI(formData);
+      
+      // request.js的响应拦截器已经处理了错误情况，这里直接处理成功情况
+      ElMessage.success('登录成功');
+      
+      // 存储token到本地存储
+      if (data.token) {
+        localStorage.setItem('token', data.token);
       }
+      
+      // 存储用户信息
+      if (data.user) {
+        localStorage.setItem('userInfo', JSON.stringify(data.user));
+      }
+      
+      // 跳转到首页
+      setTimeout(() => {
+        router.push('/') || (window.location.href = '/');
+      }, 1000);
+      return true;
     } catch (error) {
-      ElMessage.error('登录失败，请检查账号或网络');
+      // 错误信息已在request.js的拦截器中处理
+      // 这里可以添加特定的错误处理逻辑
+      ElMessage.error('登录失败，请检查账号或验证码');
       console.error('手机号登录错误:', error);
     } finally {
       loginLoading.value = false;
@@ -125,16 +151,29 @@ export const useAuthForm = () => {
   const handleEmailLogin = async (formData) => {
     loginLoading.value = true;
     try {
-      const res = await emailLoginAPI(formData);
-      if (res.success) {
-        ElMessage.success('登录成功');
-        setTimeout(() => {
-          router.push('/') || (window.location.href = '/');
-        }, 1000);
-        return true;
+      const data = await emailLoginAPI(formData);
+      
+      // request.js的响应拦截器已经处理了错误情况，这里直接处理成功情况
+      ElMessage.success('登录成功');
+      
+      // 存储token到本地存储
+      if (data.token) {
+        localStorage.setItem('token', data.token);
       }
+      
+      // 存储用户信息
+      if (data.user) {
+        localStorage.setItem('userInfo', JSON.stringify(data.user));
+      }
+      
+      // 跳转到首页
+      setTimeout(() => {
+        router.push('/') || (window.location.href = '/');
+      }, 1000);
+      return true;
     } catch (error) {
-      ElMessage.error('登录失败，请检查账号密码或网络');
+      // 错误信息已在request.js的拦截器中处理
+      ElMessage.error('登录失败，请检查账号密码');
       console.error('邮箱登录错误:', error);
     } finally {
       loginLoading.value = false;
@@ -152,23 +191,26 @@ export const useAuthForm = () => {
   const handleRegister = async (formData, resetForm, switchToLogin) => {
     registerLoading.value = true;
     try {
-      const res = await registerAPI(formData);
-      if (res.success) {
-        ElMessage.success(res.message || '注册成功');
-        // 注册成功后：重置表单 + 切换到登录选项卡
-        if (typeof resetForm === 'function') {
-          resetForm();
-        }
-        setTimeout(() => {
-          if (typeof switchToLogin === 'function') {
-            switchToLogin();
-          }
-          ElMessage.success('请使用新账号登录');
-        }, 1000);
-        return true;
+      const data = await registerAPI(formData);
+      
+      // request.js的响应拦截器已经处理了错误情况，这里直接处理成功情况
+      ElMessage.success(data.message || '注册成功');
+      
+      // 注册成功后：重置表单 + 切换到登录选项卡
+      if (typeof resetForm === 'function') {
+        resetForm();
       }
+      
+      setTimeout(() => {
+        if (typeof switchToLogin === 'function') {
+          switchToLogin();
+        }
+        ElMessage.success('请使用新账号登录');
+      }, 1000);
+      return true;
     } catch (error) {
-      ElMessage.error('注册失败，请检查信息或网络');
+      // 错误信息已在request.js的拦截器中处理
+      ElMessage.error('注册失败，请检查信息是否正确');
       console.error('注册错误:', error);
     } finally {
       registerLoading.value = false;
