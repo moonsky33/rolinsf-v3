@@ -1,16 +1,15 @@
 <template>
-    <div class="layout-container">
-        <header class="header">
-            <h1>后台主页</h1>
-            <div class="user-info">
-                <span v-if="userInfo" class="welcome-text">欢迎，{{ userInfo.username || userInfo.email || '用户' }}</span>
-                <el-button type="primary" @click="handleLogout">退出登录</el-button>
-            </div>
-        </header>
-        <main class="content">
-            <!-- 主内容区域 -->
-        </main>
-    </div>
+  <div class="common-layout">
+    <el-container class="main-container">
+      <el-header height="60px">
+        <HeaderComponent :userInfo="userInfo" @logout="handleLogout" @toggleAside="toggleAside" />
+      </el-header>
+      <el-container class="body-container">
+        <Aside :collapsed="isAsideCollapsed" />
+        <el-main class="scrollable-content">Main</el-main>
+      </el-container>
+    </el-container>
+  </div>
 </template>
 
 <script setup>
@@ -18,10 +17,20 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useRouter } from 'vue-router'
+import HeaderComponent from './components/header.vue'
+import Aside from './components/Aside.vue'
 
 const userStore = useUserStore()
 const router = useRouter()
 const userInfo = ref(null)
+const isAsideCollapsed = ref(false)
+
+// 切换侧边栏折叠状态
+const toggleAside = () => {
+  console.log('Toggle aside event received, current state:', isAsideCollapsed.value)
+  isAsideCollapsed.value = !isAsideCollapsed.value
+  console.log('New state:', isAsideCollapsed.value)
+}
 
 // 组件挂载时获取用户信息
 onMounted(() => {
@@ -30,7 +39,7 @@ onMounted(() => {
   }
 })
 
-// 处理登出
+// 处理退出登录事件
 const handleLogout = async () => {
   try {
     await userStore.handleLogout()
@@ -44,34 +53,60 @@ const handleLogout = async () => {
 </script>
 
 <style scoped>
-.layout-container {
+.el-header {
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.el-main {
+  padding: 20px;
+  background-color: #f5f7fa;
+}
+
+.el-aside {
+  background-color: #fff;
+  border-right: 1px solid #e9ecef;
+  overflow-y: hidden;
+}
+
+.common-layout {
   height: 100vh;
-  display: flex;
-  flex-direction: column;
+  overflow: hidden;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+.main-container {
+  height: 100vh;
+  overflow: hidden;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+.body-container {
+  height: calc(100vh - 60px);
+  margin-top: 60px;
 }
 
-.welcome-text {
-  font-size: 14px;
-  color: #666;
+.scrollable-content {
+  overflow-y: auto;
+  height: 100%;
+  /* 添加滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: #dcdfe6 #f5f7fa;
 }
 
-.content {
-  flex: 1;
-  padding: 20px;
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: #f5f7fa;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background-color: #dcdfe6;
+  border-radius: 3px;
 }
 </style>
+

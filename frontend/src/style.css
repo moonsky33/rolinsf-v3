@@ -1,7 +1,6 @@
 /* 全局样式表 */
-
-/* 重置所有标签的 */
 *{
   padding: 0;
   margin: 0;
+  box-sizing: border-box;
 }
