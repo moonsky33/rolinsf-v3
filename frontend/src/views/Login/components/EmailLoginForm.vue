@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, defineExpose } from 'vue'
+import { reactive, ref } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
 
 // 接收父组件传递的props
