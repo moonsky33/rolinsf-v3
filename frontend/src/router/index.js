@@ -36,8 +36,12 @@ router.beforeEach((to, from, next) => {
   // 检查用户是否已登录
   const isLoggedIn = userStore.checkLoginStatus()
   
+  // 如果用户已登录且访问的是登录页面，则重定向到后台管理系统
+  if (isLoggedIn && to.path === '/login') {
+    next('/admin')
+  }
   // 如果用户未登录且访问的页面不在白名单中，则重定向到登录页
-  if (!isLoggedIn && !whiteList.includes(to.path)) {
+  else if (!isLoggedIn && !whiteList.includes(to.path)) {
     next('/login')
   } else {
     next()

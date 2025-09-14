@@ -3,10 +3,10 @@
     <el-header height="60px" class="header-el">
       <!-- 左侧Logo和标题 -->
       <div class="header-left">
-        <div class="logo">
-          <el-icon><Menu /></el-icon>
-        </div>
-        <h1 class="system-title" @click="handleTitleClick">若林轻小说后台管理系统</h1>
+        <h1 class="system-title" @click="handleTitleClick">
+            <el-icon ><Menu /></el-icon>
+            若林轻小说后台管理系统
+        </h1>
       </div>
       
       <!-- 右侧面包屑和用户信息 -->
