@@ -20,7 +20,7 @@ export const phoneLoginRules = {
       validator: (rule, value, callback) => {
         value ? callback() : callback(new Error('请阅读并同意用户协议和隐私条款'));
       }, 
-      trigger: 'change' 
+      trigger: ['change', 'submit'] 
     }
   ]
 };

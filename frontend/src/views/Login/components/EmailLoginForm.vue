@@ -2,14 +2,28 @@
 <template>
   <el-form ref="formRef" :model="formData" :rules="rules" label-width="auto" @validate-error="onValidateError">
     <el-form-item prop="username">
-      <el-input v-model="formData.username" placeholder="请输入邮箱或用户名" :prefix-icon="User" />
+      <el-input 
+        ref="usernameInput"
+        v-model="formData.username" 
+        placeholder="请输入邮箱或用户名" 
+        :prefix-icon="User" 
+        @keyup.enter="focusPassword"
+      />
     </el-form-item>
 
     <el-form-item prop="password">
-      <el-input v-model="formData.password" type="password" show-password placeholder="请输入密码" :prefix-icon="Lock" />
+      <el-input 
+        ref="passwordInput"
+        v-model="formData.password" 
+        type="password" 
+        show-password 
+        placeholder="请输入密码" 
+        :prefix-icon="Lock" 
+        @keyup.enter="handleLogin"
+      />
     </el-form-item>
 
-    <el-form-item>
+    <el-form-item prop="status">
       <!-- 许可协议的复选框 -->
       <el-checkbox v-model="formData.status">
         我已阅读并同意
@@ -55,6 +69,8 @@ const emit = defineEmits([
 
 // 表单引用
 const formRef = ref(null)
+const usernameInput = ref(null)
+const passwordInput = ref(null)
 
 // 表单数据
 const formData = reactive({
@@ -90,6 +106,11 @@ const onValidateError = () => {
 // 暴露重置表单方法给父组件调用
 const resetForm = () => {
   formRef.value?.resetFields()
+}
+
+// 用户名输入框按回车后聚焦到密码输入框
+const focusPassword = () => {
+  passwordInput.value?.focus()
 }
 
 defineExpose({
