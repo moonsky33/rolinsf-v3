@@ -15,11 +15,11 @@
     </el-form-item>
 
     <el-form-item prop="password">
-      <el-input v-model="formData.password" type="password" placeholder="请设置密码" :prefix-icon="Lock" />
+      <el-input v-model="formData.password" type="password" show-password placeholder="请设置密码" :prefix-icon="Lock" />
     </el-form-item>
 
     <el-form-item prop="confirmPassword">
-      <el-input v-model="formData.confirmPassword" type="password" placeholder="请再次输入密码" :prefix-icon="Lock" />
+      <el-input v-model="formData.confirmPassword" type="password" show-password placeholder="请再次输入密码" :prefix-icon="Lock" />
     </el-form-item>
 
     <el-form-item>

@@ -2,6 +2,7 @@
 
 // 1.导入需要的路由成员
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/store/user'
 
 // 导入需要通过路由切换的组件
 import Login from '../views/Login/index.vue'
@@ -19,6 +20,24 @@ const router = createRouter({
         // 后台主页的路由规则
         {path: '/', component: Layout}
     ]
+})
+
+// 添加路由导航守卫
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore()
+  
+  // 不需要登录的页面白名单
+  const whiteList = ['/login']
+  
+  // 检查用户是否已登录
+  const isLoggedIn = userStore.checkLoginStatus()
+  
+  // 如果用户未登录且访问的页面不在白名单中，则重定向到登录页
+  if (!isLoggedIn && !whiteList.includes(to.path)) {
+    next('/login')
+  } else {
+    next()
+  }
 })
 
 // 3. 默认导出

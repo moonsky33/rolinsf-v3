@@ -172,12 +172,21 @@ const mockData = {
   
   // 认证相关mock数据
   auth: {
-    login: {
-      token: 'mock-jwt-token',
-      userInfo: {
-        id: '123',
+    // 用户账号数据库
+    users: {
+      'admin': {
+        username: 'admin',
+        email: 'admin@example.com',
+        password: '123456',
+        id: '001',
+        avatar: '',
+        roles: ['admin', 'user']
+      },
+      'testuser': {
         username: 'testuser',
         email: 'test@example.com',
+        password: 'password123',
+        id: '123',
         avatar: '',
         roles: ['user']
       }
